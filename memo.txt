@@ -4,3 +4,5 @@ package.jsonの  "homepage": "/sys2", を修正。
 ホストでいくなら、
 sys1.localhost とかで作成する。
 
+AWS codecommit
+https://qiita.com/tech4anyone/items/325f9e0e073d0d87529b
