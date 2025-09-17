@@ -1,0 +1,6 @@
+仮想ディレクトリ対応：
+package.jsonの  "homepage": "/sys2", を修正。
+
+ホストでいくなら、
+sys1.localhost とかで作成する。
+
