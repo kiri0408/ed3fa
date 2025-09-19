@@ -1,4 +1,3 @@
-
 """
 
 postgre ダウンロード
@@ -34,24 +33,31 @@ def search_by_id(id: str):
     Returns:
         str: 検索結果をJSON文字列で返す
     """
-    # データベースに接続
-    conn = psycopg2.connect(
-        user=user,
-        password=password,
-        host=host,
-        port=port,
-        dbname=dbname
-    )
-    # SQLクエリを作成
-    query = f"SELECT id, name, age FROM table1 WHERE id = '{id}'"
-    # Polarsを使ってクエリ結果をDataFrameとして取得
-    df = pl.read_database(query, conn)
-    # DataFrameを辞書のリストに変換
-    result = df.to_dicts()
-    # 接続を閉じる
-    conn.close()
-    # 結果をJSON文字列に変換して返す
-    return json.dumps(result, ensure_ascii=False)
+    conn = None
+    try:
+        # データベースに接続
+        conn = psycopg2.connect(
+            user=user,
+            password=password,
+            host=host,
+            port=port,
+            dbname=dbname
+        )
+        # SQLクエリを作成
+        query = f"SELECT id, name, age FROM table1 WHERE id = '{id}'"
+        # Polarsを使ってクエリ結果をDataFrameとして取得
+        df = pl.read_database(query, conn)
+        # DataFrameを辞書のリストに変換
+        result = df.to_dicts()
+        # 結果をJSON文字列に変換して返す
+        return json.dumps(result, ensure_ascii=False)
+    except Exception as e:
+        # エラー発生時はエラーメッセージをJSON形式で返す
+        return json.dumps({"status": "error", "message": str(e)}, ensure_ascii=False)
+    finally:
+        # 接続が開いていれば閉じる
+        if conn is not None:
+            conn.close()
 
 def insert_data(id: str, name: str, age: int):
     """
@@ -61,6 +67,9 @@ def insert_data(id: str, name: str, age: int):
         id (str): 挿入するID
         name (str): 挿入する名前
         age (int): 挿入する年齢
+
+    Returns:
+        dict: 挿入結果のステータスとメッセージ
     """
     import psycopg2
     try:
@@ -81,9 +90,10 @@ def insert_data(id: str, name: str, age: int):
         # カーソルと接続を閉じる
         cur.close()
         conn.close()
+        return {"status": "success", "message": "データを挿入しました"}
     except Exception as e:
-        # エラー発生時はエラーメッセージを表示
-        print(f"Error inserting data: {e}")
+        # エラー発生時はエラーメッセージを返す
+        return {"status": "error", "message": str(e)}
 
 
 def update_data(id: str, name: str, age: int):
@@ -113,9 +123,10 @@ def update_data(id: str, name: str, age: int):
         # カーソルと接続を閉じる
         cur.close()
         conn.close()
+        return {"status": "success", "message": "データを更新しました"}
     except Exception as e:
-        # エラー発生時はエラーメッセージを表示
-        print(f"Error updating data: {e}")
+        # エラー発生時はエラーメッセージを返す
+        return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
     # テスト用のデータ
@@ -124,19 +135,17 @@ if __name__ == "__main__":
     test_age = 30
 
     # データ挿入関数を呼び出し
-    insert_data(test_id, test_name, test_age)
+    bar = insert_data(test_id, test_name, test_age)
+    print(bar)
 
     # 挿入したデータをIDで検索し、結果を取得
     result_json = search_by_id(test_id)
-    
-    # 検索結果を表示
-    print("Before update:", result_json)
+    print("after insert:", result_json)
 
     # update_data関数を呼び出し
-    update_data(test_id, "田中太郎", 35)
+    hoge = update_data(test_id, "田中太郎", 35)
+    print(hoge)
 
     # 更新後のデータをIDで検索し、結果を取得
     updated_result_json = search_by_id(test_id)
-
-    # 更新結果を表示
-    print("After update:", updated_result_json)
+    print("after update:", updated_result_json)
